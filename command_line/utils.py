@@ -71,3 +71,25 @@ def exportFileToExcel(datasetid):
         print("Message: ", response["message"])
         print("File Path: ", response["filePath"])
         print("File Name: ", response["fileName"])
+
+@checkIfFileExistsById
+def viewFileStats(datasetid):
+    global ENDPOINT
+    baseUrl = (ENDPOINT + "/datasets/{datasetid}/stats").format(datasetid=datasetid)
+    response = requests.get(baseUrl)
+    response = convertBytesToDictionary(response.content)
+    print(response)
+
+@checkIfFileExistsById
+def getNumericalPlots(datasetid):
+    global ENDPOINT
+    baseUrl = (ENDPOINT + "/datasets/{datasetid}/plot").format(datasetid=datasetid)
+    response = requests.get(baseUrl)
+    print(response.content)
+
+@checkIfFileExistsById
+def deleteDatasetById(datasetid):
+    global ENDPOINT
+    baseUrl = (ENDPOINT + "/datasets/{datasetid}").format(datasetid=datasetid)
+    response = requests.delete(baseUrl)
+    print(response.content.decode("utf-8"))

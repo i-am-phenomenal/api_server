@@ -64,7 +64,8 @@ class DatasetView(View):
                 "fileName": file.fileName,
                 "fileSize": file.fileSize,
                 "insertedAt": self.getFormattedDateTime(file.insertedAt),
-                "updatedAt": self.getFormattedDateTime(file.updatedAt)
+                "updatedAt": self.getFormattedDateTime(file.updatedAt),
+                "id": file.id
             }
             for file in allFileObjects
         ]

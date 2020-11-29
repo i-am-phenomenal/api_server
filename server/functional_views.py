@@ -140,17 +140,16 @@ def generateAndReturnPdf(request, datasetId):
     fileObject = File.objects.get(id=datasetId)
     filePath = settings.MEDIA_ROOT + fileObject.fileName
     dataFrame = pd.read_csv(filePath)
-    formattedValues = {}
-    for col in dataFrame:
-        formattedValues[col] = dataFrame[col].to_list()
-    numericCols = returnOnlyNumericColumns(formattedValues)
+
     trimmedFileName = fileObject.fileName.split(".")[0]
-    pdfFile = PdfPages(settings.MEDIA_ROOT +  trimmedFileName + ".pdf")
-    for numericCol in numericCols:
-        plt.hist(numericCol["values"], bins=[1,2,3,4,5,6,7,8,9,10])    
-        trimmedFileName = fileObject.fileName.split(".")[0]
-        pdfFilePath =  settings.MEDIA_ROOT +  trimmedFileName + "_pdf" + ".pdf"
-        plt.savefig(pdfFilePath)
+    num =dataFrame.select_dtypes('number')
+    pdfFilePath = settings.MEDIA_ROOT +  trimmedFileName + ".pdf"
+    with PdfPages(pdfFilePath) as file: 
+        num.hist(bins=30, figsize=(15, 10))
+        plt.grid(True)
+        file.savefig()
+        plt.close()
+
     with open(pdfFilePath, "rb") as file: 
         response = HttpResponse(file.read(), content_type="application/pdf")
         response["Content-Disposition"] = "inline; filename=" + os.path.basename(pdfFilePath)

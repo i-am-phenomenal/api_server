@@ -27,7 +27,16 @@ def exporttoexcel(datasetid):
 @cli.command()
 @click.argument("datasetid", type=int)
 def viewstats(datasetid):
-    pass
+    utils.viewFileStats(datasetid)
 
+@cli.command()
+@click.argument("datasetid", type=int)
+def getplot(datasetid):
+    utils.getNumericalPlots(datasetid)
+
+@cli.command()
+@click.argument("datasetid", type=int)
+def deletedataset(datasetid):
+    utils.deleteDatasetById(datasetid)
 
 cli()
