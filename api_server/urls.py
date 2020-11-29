@@ -2,12 +2,13 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import  url
 from api_server import settings 
-from server import views
+from server import views, functional_views
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r"dataset/datasets/",views.DatasetView.as_view())
+    path("dataset/datasets/<int:datasetId>", functional_views.getDataSetByDatasetId),
+    url(r"dataset/datasets/",views.DatasetView.as_view()),
 ]
 
 if settings.DEBUG:
