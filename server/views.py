@@ -43,7 +43,8 @@ class DatasetView(View):
                     {
                         "filePath": filePath,
                         "fileName" : params.name,
-                        "message": "File saved as pandas dataframe successfully !"
+                        "message": "File saved as pandas dataframe successfully !",
+                        "id": fileObject.id
                     }
                 ),
                 status=200
@@ -71,5 +72,3 @@ class DatasetView(View):
             json.dumps(formatted),
             status=200
         )
-
-        

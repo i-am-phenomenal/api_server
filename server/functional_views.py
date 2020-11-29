@@ -9,6 +9,21 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
+def checkIfFileWithNameExists(function): 
+    def innerFunction(request, datasetId):
+        fileObject = File.objects.get(id=datasetId)
+        excelFileName = fileObject.fileName.split(".")[0] + "_excel" + ".xlsx"
+        if os.path.isfile(settings.MEDIA_ROOT + excelFileName): 
+            return HttpResponse(
+                json.dumps(
+                    {"message": "The excel file already exists"}
+                ),
+                status=200
+            )
+        else: 
+            return function(request, datasetId)
+    return innerFunction
+
 def checkIfFileWithIdExists(function): 
     def innerFunction(request, datasetId): 
         if File.objects.filter(id=datasetId).exists():
@@ -52,6 +67,7 @@ def getDataSetByDatasetId(request, datasetId):
             )
 
 @checkIfFileWithIdExists
+@checkIfFileWithNameExists
 def exportDatasetToExcel(request, datasetId):
     fileObject = File.objects.get(id=datasetId)
     filePath = settings.MEDIA_ROOT + fileObject.fileName
@@ -96,16 +112,12 @@ def getFileStats(request, datasetId):
     filePath = settings.MEDIA_ROOT + fileObject.fileName
     dataFrame = pd.read_csv(filePath)
     stats = dataFrame.describe()
-    idStats = getFormattedStats(stats.id)
-    zipStats = getFormattedStats(stats.zip)
-    versionStats = getFormattedStats(stats.version)
+    formatted = {}
+    for col in stats: 
+        formatted[col] = getFormattedStats(stats[col])
     return HttpResponse(
         json.dumps(
-            {
-                "idStats": idStats,
-                "zipStats": zipStats,
-                "versionStats": versionStats
-            }
+            formatted
         ),
         status=200
     )
@@ -135,13 +147,22 @@ def generateAndReturnPdf(request, datasetId):
     trimmedFileName = fileObject.fileName.split(".")[0]
     pdfFile = PdfPages(settings.MEDIA_ROOT +  trimmedFileName + ".pdf")
     for numericCol in numericCols:
-        fig = plt.hist(np.array(numericCol["values"]), bin=50)
-        # trimmedFileName = fileObject.fileName.split(".")[0]
-        # pdfFilePath =  settings.MEDIA_ROOT +  trimmedFileName +str(iter) +  ".pdf"
-        pdfFile.savefig(fig, bbox_inches="tight")
+        plt.hist(numericCol["values"], bins=[1,2,3,4,5,6,7,8,9,10])    
+        trimmedFileName = fileObject.fileName.split(".")[0]
+        pdfFilePath =  settings.MEDIA_ROOT +  trimmedFileName + "_pdf" + ".pdf"
+        plt.savefig(pdfFilePath)
     with open(pdfFilePath, "rb") as file: 
         response = HttpResponse(file.read(), content_type="application/pdf")
         response["Content-Disposition"] = "inline; filename=" + os.path.basename(pdfFilePath)
         return response
     
+#  if request.method == 'GET':
+#         df = pd.read_csv(dataset.dataset)
+#         numeric_column_dataset = df.select_dtypes('number')
+#         file_name = f'{settings.BASE_DIR}/server_files/{dataset.dataset_name}.pdf'
+#         with PdfPages(file_name) as pdf_file:
+#             numeric_column_dataset.hist(bins=30, figsize=(15, 10))
+#             plt.grid(True)
+#             pdf_file.savefig()
+#             plt.close()
 
