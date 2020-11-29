@@ -155,14 +155,12 @@ def generateAndReturnPdf(request, datasetId):
         response = HttpResponse(file.read(), content_type="application/pdf")
         response["Content-Disposition"] = "inline; filename=" + os.path.basename(pdfFilePath)
         return response
-    
-#  if request.method == 'GET':
-#         df = pd.read_csv(dataset.dataset)
-#         numeric_column_dataset = df.select_dtypes('number')
-#         file_name = f'{settings.BASE_DIR}/server_files/{dataset.dataset_name}.pdf'
-#         with PdfPages(file_name) as pdf_file:
-#             numeric_column_dataset.hist(bins=30, figsize=(15, 10))
-#             plt.grid(True)
-#             pdf_file.savefig()
-#             plt.close()
 
+
+def checkIfFileExists(request, datasetId):
+    return HttpResponse(
+        json.dumps(
+            File.objects.filter(id=datasetId).exists()
+        ),
+        status=200
+    )
