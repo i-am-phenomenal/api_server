@@ -6,6 +6,8 @@ from .models import File
 from api_server import settings
 import os
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
 
 def checkIfFileWithIdExists(function): 
     def innerFunction(request, datasetId): 
@@ -130,14 +132,16 @@ def generateAndReturnPdf(request, datasetId):
     for col in dataFrame:
         formattedValues[col] = dataFrame[col].to_list()
     numericCols = returnOnlyNumericColumns(formattedValues)
+    trimmedFileName = fileObject.fileName.split(".")[0]
+    pdfFile = PdfPages(settings.MEDIA_ROOT +  trimmedFileName + ".pdf")
     for numericCol in numericCols:
-        plt.hist(numericCol["values"], bins=1)    
-        trimmedFileName = fileObject.fileName.split(".")[0]
-        pdfFilePath =  settings.MEDIA_ROOT +  trimmedFileName + "_pdf" + ".pdf"
-        plt.savefig(pdfFilePath)
-        with open(pdfFilePath, "rb") as file: 
-            response = HttpResponse(file.read(), content_type="application/pdf")
-            response["Content-Disposition"] = "inline; filename=" + os.path.basename(pdfFilePath)
-            return response
+        fig = plt.hist(np.array(numericCol["values"]), bin=50)
+        # trimmedFileName = fileObject.fileName.split(".")[0]
+        # pdfFilePath =  settings.MEDIA_ROOT +  trimmedFileName +str(iter) +  ".pdf"
+        pdfFile.savefig(fig, bbox_inches="tight")
+    with open(pdfFilePath, "rb") as file: 
+        response = HttpResponse(file.read(), content_type="application/pdf")
+        response["Content-Disposition"] = "inline; filename=" + os.path.basename(pdfFilePath)
+        return response
     
 
