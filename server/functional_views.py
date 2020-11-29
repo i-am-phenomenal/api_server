@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+import pandas as pd
 import csv
 import json
 from .models import File
@@ -46,3 +47,42 @@ def getDataSetByDatasetId(request, datasetId):
                 ),
                 status=500
             )
+
+@checkIfFileWithIdExists
+def exportDatasetToExcel(request, datasetId):
+    fileObject = File.objects.get(id=datasetId)
+    filePath = settings.MEDIA_ROOT + fileObject.fileName
+    dataFrame = pd.read_csv(filePath)
+    excelFileName = fileObject.fileName.split(".")[0] + "_excel" + ".xlsx"
+    excelFilePath = settings.MEDIA_ROOT + excelFileName
+    excelWriterObject = pd.ExcelWriter(excelFilePath)
+    dataFrame.to_excel(excelWriterObject, index=False)
+    excelWriterObject.save()
+    fileObject = File(
+        fileName=excelFileName,
+        fileSize = fileObject.fileSize
+    )
+    fileObject.save()
+    return HttpResponse(
+        json.dumps(
+            {
+                "filePath": excelFilePath,
+                "fileName": excelFileName,
+                "fileId": fileObject.id,
+                "message": "File converted to excel and saved to the server"
+            }
+        ),
+        status=200
+    )
+
+@checkIfFileWithIdExists
+def getFileStats(request, datasetId):
+    fileObject = File.objects.get(id=datasetId)
+    filePath = settings.MEDIA_ROOT + fileObject.fileName
+    dataFrame = pd.read_csv(filePath)
+    stats = dataFrame.describe()
+    print(stats.id, "!!!!!!!")
+    for row in stats:
+        print(row, type(row), "11111111111111")
+    # print(stats[0], '2222222222')
+    return HttpResponse("Ok")

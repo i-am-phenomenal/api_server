@@ -8,6 +8,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("dataset/datasets/<int:datasetId>", functional_views.getDataSetByDatasetId),
+    path("dataset/datasets/<int:datasetId>/excel", functional_views.exportDatasetToExcel),
+    path("dataset/datasets/<int:datasetId>/stats", functional_views.getFileStats),
     url(r"dataset/datasets/",views.DatasetView.as_view()),
 ]
 
